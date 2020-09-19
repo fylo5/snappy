@@ -200,12 +200,12 @@ static char *copyBootHash(void)
 char *copy_system_snapshot()
 {
 	char *hash = copyBootHash();
-	if (hash == NULL) {
-		return NULL;
-	}
 #if TARGET_OS_OSX
 	return hash;
 #else
+	if (hash == NULL) {
+		return NULL;
+	}
 	char *hashsnap = malloc(strlen(APPLESNAP) + strlen(hash) + 1);
 	strcpy(hashsnap, APPLESNAP);
 	strcpy(hashsnap + strlen(APPLESNAP), hash);
