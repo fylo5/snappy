@@ -87,7 +87,7 @@ void usage(void)
 #else
 			"\t-s, --showhash\t\tShow the name of the system snapshot for this boot-manifest-hash\n"
 #endif
-			"\t-x, --to-system\t\tSet the target snapshot name to be the iOS system-snapshot\n"
+			"\t-x, --to-system\t\tSet the target snapshot name to be the system-snapshot\n"
 			"\t-o, --orig\t\tRevert to the original pre-jailbreak snapshot\n"
 			);
 }
