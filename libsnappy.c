@@ -25,7 +25,11 @@ kern_return_t IOObjectRelease(io_object_t object );
 #include "snappy.h"
 
 static char *copyBootHash(void);
+
+#include "TargetConditionals.h"
+#if !TARGET_OS_OSX
 #define APPLESNAP "com.apple.os.update-"
+#endif
 
 __attribute__((aligned(4)))
 typedef struct val_attrs {
@@ -143,12 +147,20 @@ static char *copyBootHash(void)
 		return NULL;
 	}
 
+#if TARGET_OS_OSX
+    CFDataRef hash = (CFDataRef)IORegistryEntryCreateCFProperty(chosen, CFSTR("root-snapshot-name"), kCFAllocatorDefault, 0);
+#else
 	CFDataRef hash = (CFDataRef)IORegistryEntryCreateCFProperty(chosen, CFSTR("boot-manifest-hash"), kCFAllocatorDefault, 0);
+#endif
 
 	IOObjectRelease(chosen);
 
 	if (hash == nil) {
+#if TARGET_OS_OSX
+        fprintf(stderr, "Unable to read root-snapshot-name\n");
+#else
 		fprintf(stderr, "Unable to read boot-manifest-hash\n");
+#endif
 		return NULL;
 	}
 
@@ -160,6 +172,15 @@ static char *copyBootHash(void)
 
 	// Make a hex string out of the hash
 
+#if TARGET_OS_OSX
+    CFStringRef root_snapshot_name = CFStringCreateFromExternalRepresentation(NULL, hash, kCFStringEncodingUTF8);
+    CFIndex length = CFStringGetMaximumSizeForEncoding(CFStringGetLength(root_snapshot_name), kCFStringEncodingUTF8) + 1;
+    char *manifestHash = (char*)calloc(length, sizeof(char));
+
+    CFStringGetCString(root_snapshot_name, manifestHash, length, kCFStringEncodingUTF8);
+
+    CFRelease(root_snapshot_name);
+#else
 	CFIndex length = CFDataGetLength(hash) * 2 + 1;
 	char *manifestHash = (char*)calloc(length, sizeof(char));
 
@@ -172,6 +193,7 @@ static char *copyBootHash(void)
 		free(manifestHash);
 		return NULL;
 	}
+#endif
 
 	return manifestHash;
 }
@@ -182,9 +204,13 @@ char *copy_system_snapshot()
     if (hash == NULL) {
         return NULL;
     }
+#if TARGET_OS_OSX
+    return hash;
+#else
     char *hashsnap = malloc(strlen(APPLESNAP) + strlen(hash) + 1);
     strcpy(hashsnap, APPLESNAP);
     strcpy(hashsnap + strlen(APPLESNAP), hash);
     free(hash);
     return hashsnap;
+#endif
 }
