@@ -41,31 +41,31 @@ typedef struct val_attrs {
 
 bool snapshot_check(int dirfd, const char *name)
 {
-    const char **snapshots = copy_snapshot_list(dirfd);
-    if (snapshots == NULL) {
-        return false;
-    }
-    for (const char **snapshot = snapshots; *snapshot; snapshot++) {
-        if (strcmp(name, *snapshot)==0) {
-            free(snapshots);
-            return true;
-        }
-    }
-    free(snapshots);
-    return false;
+	const char **snapshots = copy_snapshot_list(dirfd);
+	if (snapshots == NULL) {
+		return false;
+	}
+	for (const char **snapshot = snapshots; *snapshot; snapshot++) {
+		if (strcmp(name, *snapshot)==0) {
+			free(snapshots);
+			return true;
+		}
+	}
+	free(snapshots);
+	return false;
 }
 
 const char *copy_first_snapshot(int dirfd)
 {
-    char *snapshot = NULL;
+	char *snapshot = NULL;
 
-    const char **snapshots = copy_snapshot_list(dirfd);
-    if (!snapshots) return NULL;
-    if (snapshots[0]) {
-        snapshot = strdup(snapshots[0]);
-    }
-    free(snapshots);
-    return snapshot;
+	const char **snapshots = copy_snapshot_list(dirfd);
+	if (!snapshots) return NULL;
+	if (snapshots[0]) {
+		snapshot = strdup(snapshots[0]);
+	}
+	free(snapshots);
+	return snapshot;
 }
 
 const char **copy_snapshot_list(int dirfd)
@@ -76,8 +76,8 @@ const char **copy_snapshot_list(int dirfd)
 	struct attrlist attr_list = { 0 };
 
         if (snapshots == NULL) {
-            perror("Unable to allocate memory for snapshot names");
-            return NULL;
+		perror("Unable to allocate memory for snapshot names");
+		return NULL;
         }
 
 	attr_list.commonattr = ATTR_BULK_REQUIRED;
@@ -89,8 +89,8 @@ const char **copy_snapshot_list(int dirfd)
 	while ((retcount = fs_snapshot_list(dirfd, &attr_list, &buf, sizeof(buf), 0))>0) {
 		val_attrs_t *entry = &buf;
 
-                int i;
-                for (i=0; i<retcount; i++) {
+		int i;
+		for (i=0; i<retcount; i++) {
 			if (entry->returned.commonattr & ATTR_CMN_NAME) {
 				size_t size = strlen(entry->name) + 1;
 				if (snapidx > 255) {
@@ -101,8 +101,8 @@ const char **copy_snapshot_list(int dirfd)
 					snapshots_size += MAXPATHLEN;
 					snapshots = (char **)reallocf(snapshots, snapshots_size);
                                         if (snapshots == NULL) {
-                                            perror("Couldn't realloc snapshot buffer");
-                                            return NULL;
+						perror("Couldn't realloc snapshot buffer");
+						return NULL;
                                         }
 				}
 				snapshots[snapidx] = (char *)snapshots + nameOffset;
@@ -113,7 +113,7 @@ const char **copy_snapshot_list(int dirfd)
 
 			entry = (val_attrs_t *)((char *)entry + entry->length);
 		}
-                bzero(&buf, sizeof(buf));
+		bzero(&buf, sizeof(buf));
         }
 
 	if (retcount < 0) {
@@ -148,7 +148,7 @@ static char *copyBootHash(void)
 	}
 
 #if TARGET_OS_OSX
-    CFDataRef hash = (CFDataRef)IORegistryEntryCreateCFProperty(chosen, CFSTR("root-snapshot-name"), kCFAllocatorDefault, 0);
+	CFDataRef hash = (CFDataRef)IORegistryEntryCreateCFProperty(chosen, CFSTR("root-snapshot-name"), kCFAllocatorDefault, 0);
 #else
 	CFDataRef hash = (CFDataRef)IORegistryEntryCreateCFProperty(chosen, CFSTR("boot-manifest-hash"), kCFAllocatorDefault, 0);
 #endif
@@ -157,7 +157,7 @@ static char *copyBootHash(void)
 
 	if (hash == nil) {
 #if TARGET_OS_OSX
-        fprintf(stderr, "Unable to read root-snapshot-name\n");
+		fprintf(stderr, "Unable to read root-snapshot-name\n");
 #else
 		fprintf(stderr, "Unable to read boot-manifest-hash\n");
 #endif
@@ -173,13 +173,13 @@ static char *copyBootHash(void)
 	// Make a hex string out of the hash
 
 #if TARGET_OS_OSX
-    CFStringRef root_snapshot_name = CFStringCreateFromExternalRepresentation(NULL, hash, kCFStringEncodingUTF8);
-    CFIndex length = CFStringGetMaximumSizeForEncoding(CFStringGetLength(root_snapshot_name), kCFStringEncodingUTF8) + 1;
-    char *manifestHash = (char*)calloc(length, sizeof(char));
+	CFStringRef root_snapshot_name = CFStringCreateFromExternalRepresentation(NULL, hash, kCFStringEncodingUTF8);
+	CFIndex length = CFStringGetMaximumSizeForEncoding(CFStringGetLength(root_snapshot_name), kCFStringEncodingUTF8) + 1;
+	char *manifestHash = (char*)calloc(length, sizeof(char));
 
-    CFStringGetCString(root_snapshot_name, manifestHash, length, kCFStringEncodingUTF8);
+	CFStringGetCString(root_snapshot_name, manifestHash, length, kCFStringEncodingUTF8);
 
-    CFRelease(root_snapshot_name);
+	CFRelease(root_snapshot_name);
 #else
 	CFIndex length = CFDataGetLength(hash) * 2 + 1;
 	char *manifestHash = (char*)calloc(length, sizeof(char));
@@ -200,17 +200,17 @@ static char *copyBootHash(void)
 
 char *copy_system_snapshot()
 {
-    char *hash = copyBootHash();
-    if (hash == NULL) {
-        return NULL;
-    }
+	char *hash = copyBootHash();
+	if (hash == NULL) {
+		return NULL;
+	}
 #if TARGET_OS_OSX
-    return hash;
+	return hash;
 #else
-    char *hashsnap = malloc(strlen(APPLESNAP) + strlen(hash) + 1);
-    strcpy(hashsnap, APPLESNAP);
-    strcpy(hashsnap + strlen(APPLESNAP), hash);
-    free(hash);
-    return hashsnap;
+	char *hashsnap = malloc(strlen(APPLESNAP) + strlen(hash) + 1);
+	strcpy(hashsnap, APPLESNAP);
+	strcpy(hashsnap + strlen(APPLESNAP), hash);
+	free(hash);
+	return hashsnap;
 #endif
 }
