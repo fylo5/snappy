@@ -82,7 +82,11 @@ void usage(void)
 #endif
 			"\t-t, --to PATH\n"
 			"\t-v, --revert NAME\tRevert to snapshot named NAME\n"
+#if TARGET_OS_OSX
+			"\t-s, --showhash\t\tShow the name of the system snapshot for this root-snapshot-name\n"
+#else
 			"\t-s, --showhash\t\tShow the name of the system snapshot for this boot-manifest-hash\n"
+#endif
 			"\t-x, --to-system\t\tSet the target snapshot name to be the iOS system-snapshot\n"
 			"\t-o, --orig\t\tRevert to the original pre-jailbreak snapshot\n"
 			);

@@ -26,7 +26,6 @@ kern_return_t IOObjectRelease(io_object_t object );
 
 static char *copyBootHash(void);
 
-#include "TargetConditionals.h"
 #if !TARGET_OS_OSX
 #define APPLESNAP "com.apple.os.update-"
 #endif
